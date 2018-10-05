@@ -9,6 +9,7 @@ const {
   GraphQLList
 } = require("graphql");
 
+//here is where you're detailing the schema of the returned object
 const BookType = new GraphQLObjectType({
     name: 'Book',
     description: '...',
@@ -17,11 +18,12 @@ const BookType = new GraphQLObjectType({
         title: {
             type: GraphQLString, 
             resolve: xml => 
-            xml.title[0]
+            xml.GoodreadsResponse.book[0].title[0]
         },
         isbn: {
             type: GraphQLString,
-            resolve: xml => xml.isbn[0]
+            resolve: xml => 
+            xml.GoodreadsResponse.book[0].isbn[0]
         }
     })
 })
@@ -37,9 +39,15 @@ const AuthorType = new GraphQLObjectType({
     },
     books: {
         type: new GraphQLList(BookType),  
-        resolve: xml => 
-            xml.GoodreadsResponse.author[0].books[0].book
-        
+        resolve: xml => {
+        const ids = xml.GoodreadsResponse.author[0].books[0].book.map(elem => elem.id[0]._) //awkward underscore is from how xml2json works
+        return Promise.all(ids.map(id => 
+          //this is a 'nested fetch' (as opposed to outer fetch)
+          fetch(`https://www.goodreads.com/author/show.xml?id=${id}&key=ZZYjhoulWBGDw6Yhymeepg`)
+          .then(response => response.text())
+          .then(parseXML)
+          ))
+        }
     }
   })
 });
