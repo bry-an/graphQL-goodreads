@@ -25,6 +25,7 @@ const BookType = new GraphQLObjectType({
         }
     })
 })
+
 const AuthorType = new GraphQLObjectType({
   name: "Author",
   description: "...",
@@ -36,9 +37,9 @@ const AuthorType = new GraphQLObjectType({
     },
     books: {
         type: new GraphQLList(BookType),  
-        resolve: xml => {
+        resolve: xml => 
             xml.GoodreadsResponse.author[0].books[0].book
-        }
+        
     }
   })
 });
@@ -56,7 +57,6 @@ module.exports = new GraphQLSchema({
           fetch(`https://www.goodreads.com/author/show.xml?id=${args.id}&key=ZZYjhoulWBGDw6Yhymeepg`
           )
             .then(response => response.text())
-            // .then(response => response.replace("\ufeff", ""))
             .then(parseXML)
       }
     })
